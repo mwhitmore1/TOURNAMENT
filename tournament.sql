@@ -34,14 +34,19 @@ CREATE TABLE matches(match_id SERIAL PRIMARY KEY,
 --that the number of rounds can be kept track of.  
 INSERT INTO tournaments (tournament_name) VALUES ('tournament #1');
 
-
+--Adds up all of the wins of each player.  Will show a zero if 
+--the player has no wins.
 CREATE VIEW wins 
 AS
-SELECT winner, COUNT(winner) AS wins
-FROM matches 
-GROUP BY winner          ;
+SELECT players.player_id, 
+COALESCE(COUNT(matches.winner),0) 
+AS wins 
+FROM players LEFT JOIN matches 
+ON players.player_id = matches.winner 
+GROUP BY players.player_id;
 
-
+--Adds up all of the draws of each player.  Will show a zero if 
+--the player has no draws.
 CREATE VIEW draws 
 AS 
 SELECT players.player_id, 
