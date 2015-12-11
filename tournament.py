@@ -92,10 +92,9 @@ def reactivatePlayer(player_id):
 
 
 def countPlayers():
-    def countPlayers():
-    conn = DB().execute("SELECT count(*) FROM players”)
+    conn = DB().execute('SELECT count(*) FROM players')
     cursor = conn["cursor"].fetchone()
-    conn[‘conn’].close()
+    conn['conn'].close()
     return cursor[0]
 
 
