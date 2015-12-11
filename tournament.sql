@@ -37,9 +37,19 @@ INSERT INTO tournaments (tournament_name) VALUES ('tournament #1');
 
 CREATE VIEW wins 
 AS
-SELECT winner, COUNT(winner) 
+SELECT winner, COUNT(winner) AS wins
 FROM matches 
 GROUP BY winner          ;
+
+
+CREATE VIEW draws 
+AS 
+SELECT player_id, COUNT(draw) 
+FROM players, matches 
+WHERE matches.draw = true 
+AND (players.player_id = matches.winner 
+OR players.player_id = matches.loser) 
+GROUP BY players.player_id;
 
 
 --The OMW_score is the combined scores of all opponents a player_id
