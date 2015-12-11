@@ -4,7 +4,41 @@
 #
 
 import psycopg2
-import bleach
+
+
+class DB:
+
+    def __init__(self, db_con_str="dbname=tournament"):
+        """
+        Creates a database connection with the connection string provided
+        :param str db_con_str: Contains the database connection string, with a default value when no argument is passed to the parameter
+        """
+        self.conn = psycopg2.connect(db_con_str)
+
+    def cursor(self):
+        """
+        Returns the current cursor of the database
+        """
+        return self.conn.cursor();
+
+    def execute(self, sql_query_string, and_close=False):
+        """
+        Executes SQL queries
+        :param str sql_query_string: Contain the query string to be executed
+        :param bool and_close: If true, closes the database connection after executing and commiting the SQL Query
+        """
+        cursor = self.cursor()
+        cursor.execute(sql_query_string)
+        if and_close:
+            self.conn.commit()
+            self.close()
+        return {"conn": self.conn, "cursor": cursor if not and_close else None}
+
+    def close(self):
+        """
+        Closes the current database connection
+        """
+        return self.conn.close()
 
 
 def connect():
@@ -18,29 +52,20 @@ def createTournament(name='Tournament #1'):
     c = DB.cursor()
     # The tournament name is sanitized with the clean() method.
     c.execute('''INSERT INTO tournaments (tournament_name)
-                 VALUES (%s);''', (bleach.clean(name),))
+                 VALUES (%s);''', (name,))
     DB.commit()
     DB.close()
 
 
 def deleteMatches():
-    DB = connect()
-    c = DB.cursor()
-    c.execute('''DELETE FROM matches;''')
-    DB.commit
-    DB.close()
+    DB().execute('''DELETE FROM matches;''', True)
 
 
 def deletePlayers():
     # The matches table uses player_id from the players table as a
     # foriegn key, thus all mathces are cleared prior to the players
     # being cleared to avoid violation of the constraint.
-    DB = connect()
-    c = DB.cursor()
-    c.execute('''DELETE FROM matches;''')
-    c.execute('''DELETE FROM players;''')
-    DB.commit()
-    DB.close()
+    DB().execute('''DELETE FROM players;''', True)
 
 # Deactivating a player will remove them from the rankings, so long
 # as they remain deactivated.
@@ -67,11 +92,11 @@ def reactivatePlayer(player_id):
 
 
 def countPlayers():
-    DB = connect()
-    c = DB.cursor()
-    c.execute('''SELECT COUNT(*) AS num FROM players;''')
-    result = c.fetchall()[0][0]
-    return result
+    def countPlayers():
+    conn = DB().execute("SELECT count(*) FROM players”)
+    cursor = conn["cursor"].fetchone()
+    conn[‘conn’].close()
+    return cursor[0]
 
 
 def registerPlayer(name):
@@ -80,7 +105,7 @@ def registerPlayer(name):
     c = DB.cursor()
     # The players name is sanitized with the clean() method.
     c.execute('''INSERT INTO players (name)
-                 VALUES (%s);''', (bleach.clean(name),))
+                 VALUES (%s);''', (name,))
     DB.commit()
     DB.close()
 
@@ -153,7 +178,7 @@ def giveBye(winner):
     DB.close()
 
 
-def swissPairings(tournament_id = 1):
+def swissPairings(tournament_id=1):
     DB = connect()
     # byeId is the ID of the player who will recieve a by this
     # round.
