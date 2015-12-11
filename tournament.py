@@ -115,14 +115,11 @@ def playerStandings():
     # each players number of wins.  If one player has
     # the same number of wins as another the player with the
     # least amount of loses will be ranked higher.
-    result = []
-    DB = connect()
-    c = DB.cursor()
-    c.execute('''SELECT player_id,name,wins,matches
-                 FROM rankings;''')
-    result = c.fetchall()
-    DB.close()
-    return result
+    conn = DB().execute('''SELECT player_id,name,wins,matches
+                           FROM rankings;''')
+    cursor = conn["cursor"].fetchall()
+    conn['conn'].close()
+    return cursor
 
 
 def reportMatch(winner, loser, draw=False, tournament_id=1):
