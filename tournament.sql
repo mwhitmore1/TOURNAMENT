@@ -44,11 +44,11 @@ GROUP BY winner          ;
 
 CREATE VIEW draws 
 AS 
-SELECT player_id, COUNT(draw) 
-FROM players, matches 
-WHERE matches.draw = true 
-AND (players.player_id = matches.winner 
-OR players.player_id = matches.loser) 
+SELECT players.player_id, 
+SUM(CASE WHEN matches.draw THEN 1 ELSE 0 END) AS draws 
+FROM players LEFT JOIN matches 
+ON players.player_id=matches.winner 
+OR players.player_id = matches.loser 
 GROUP BY players.player_id;
 
 
@@ -61,7 +61,6 @@ draws.count + wins.wins AS omw_score
 FROM players 
 LEFT JOIN wins ON players.player_id = wins.winner 
 LEFT JOIN draws ON players.player_id = draws.player_id;
-
 
 
 --rankings are based on points.  A win counts for 3 points, a draw
