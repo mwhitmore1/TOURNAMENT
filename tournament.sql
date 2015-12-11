@@ -1,11 +1,5 @@
 --The drop statements below get rid of pre-existing 
 --tables and databases.
-DROP VIEW IF EXISTS OMW_scores;
-DROP VIEW IF EXISTS rankings;
-
-DROP TABLE IF EXISTS tournaments;
-DROP TABLE IF EXISTS matches;
-DROP TABLE IF EXISTS players;
 
 DROP DATABASE IF EXISTS tournament;
 
@@ -17,6 +11,7 @@ CREATE TABLE tournaments(tournament_id SERIAL PRIMARY KEY,
 						tournament_name TEXT,
 						round_number INT DEFAULT 0);
 
+
 CREATE TABLE players(player_id SERIAL PRIMARY KEY, 
 					 name TEXT, 
 					 tournament_id INT REFERENCES tournaments(tournament_id),
@@ -26,7 +21,8 @@ CREATE TABLE players(player_id SERIAL PRIMARY KEY,
 					 draws INT DEFAULT 0,
 					 points INT DEFAULT 0,
 					 matches INT DEFAULT 0);
-					 
+
+
 CREATE TABLE matches(match_id SERIAL PRIMARY KEY, 
 					 tounament_id INT REFERENCES tournaments(tournament_id),
 					 round_number INT,
@@ -37,7 +33,13 @@ CREATE TABLE matches(match_id SERIAL PRIMARY KEY,
 --The insert statemetn below creates a default tournament, so
 --that the number of rounds can be kept track of.  
 INSERT INTO tournaments (tournament_name) VALUES ('tournament #1');
-						
+
+
+CREATE VIEW wins 
+AS
+SELECT winner, COUNT(winner) 
+FROM matches 
+GROUP BY winner          ;
 
 
 --The OMW_score is the combined scores of all opponents a player_id
@@ -48,6 +50,7 @@ FROM matches, players
 WHERE matches.loser = players.player_id
 AND matches.draw = FALSE
 GROUP BY matches.winner;
+
 
 --rankings are based on points.  A win counts for 3 points, a draw
 --counts for 1 and a lose counts for 0. 
