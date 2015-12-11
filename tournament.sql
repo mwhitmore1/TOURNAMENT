@@ -54,12 +54,14 @@ GROUP BY players.player_id;
 
 --The OMW_score is the combined scores of all opponents a player_id
 --has won or tied against.
-CREATE VIEW OMW_scores
-AS SELECT matches.winner, SUM(players.points) AS OMW_score
-FROM matches, players 
-WHERE matches.loser = players.player_id
-AND matches.draw = FALSE
-GROUP BY matches.winner;
+CREATE VIEW omw_scores 
+AS 
+SELECT players.player_id, draws.count, wins.wins, 
+draws.count + wins.wins AS omw_score
+FROM players 
+LEFT JOIN wins ON players.player_id = wins.winner 
+LEFT JOIN draws ON players.player_id = draws.player_id;
+
 
 
 --rankings are based on points.  A win counts for 3 points, a draw
