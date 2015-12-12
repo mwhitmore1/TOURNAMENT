@@ -62,10 +62,10 @@ GROUP BY players.player_id;
 --has won or tied against.
 CREATE VIEW scores 
 AS 
-SELECT players.player_id, draws.count, wins.wins, 
-draws.count + wins.wins AS score
-FROM players 
-LEFT JOIN wins ON players.player_id = wins.player_id 
+SELECT players.player_id,
+draws.draws, wins.wins, draws.draws + wins.wins*3 AS score
+FROM players
+LEFT JOIN wins ON players.player_id = wins.player_id
 LEFT JOIN draws ON players.player_id = draws.player_id;
 
 
