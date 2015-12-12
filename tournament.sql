@@ -43,6 +43,7 @@ COALESCE(COUNT(matches.winner),0)
 AS wins 
 FROM players LEFT JOIN matches 
 ON players.player_id = matches.winner 
+AND matches.draw = false
 GROUP BY players.player_id;
 
 --Adds up all of the draws of each player.  Will show a zero if 
@@ -59,12 +60,12 @@ GROUP BY players.player_id;
 
 --The OMW_score is the combined scores of all opponents a player_id
 --has won or tied against.
-CREATE VIEW omw_scores 
+CREATE VIEW scores 
 AS 
 SELECT players.player_id, draws.count, wins.wins, 
-draws.count + wins.wins AS omw_score
+draws.count + wins.wins AS score
 FROM players 
-LEFT JOIN wins ON players.player_id = wins.winner 
+LEFT JOIN wins ON players.player_id = wins.player_id 
 LEFT JOIN draws ON players.player_id = draws.player_id;
 
 
