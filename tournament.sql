@@ -60,7 +60,7 @@ GROUP BY players.player_id;
 
 CREATE VIEW scores 
 AS 
-SELECT players.player_id,
+SELECT players.player_id, players.active,
 draws.draws, wins.wins, draws.draws + wins.wins*3 AS score
 FROM players
 LEFT JOIN wins ON players.player_id = wins.player_id
@@ -82,9 +82,9 @@ GROUP BY matches.winner;
 CREATE VIEW rankings 
 AS 
 SELECT ROW_NUMBER() OVER(
-ORDER BY players.points DESC, OMW_scores.OMW_score DESC) AS rank, * 
-FROM players LEFT JOIN OMW_scores ON players.player_id = OMW_scores.winner
-WHERE players.active = TRUE;
+ORDER BY scores.score DESC, OMW_scores.OMW_score DESC) AS rank, * 
+FROM scores LEFT JOIN OMW_scores ON scores.player_id = OMW_scores.winner
+WHERE scores.active = TRUE;
 
 
 
