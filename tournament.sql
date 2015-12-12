@@ -25,9 +25,11 @@ CREATE TABLE matches(match_id SERIAL PRIMARY KEY,
 					 loser INT REFERENCES players(player_id),
 					 draw BOOLEAN DEFAULT FALSE);
 
+					 
 --The insert statemetn below creates a default tournament, so
 --that the number of rounds can be kept track of.  
 INSERT INTO tournaments (tournament_name) VALUES ('tournament #1');
+
 
 --Adds up all of the wins of each player.  Will show a zero if 
 --the player has no wins.
@@ -41,6 +43,7 @@ ON players.player_id = matches.winner
 AND matches.draw = false
 GROUP BY players.player_id;
 
+
 --Adds up all of the draws of each player.  Will show a zero if 
 --the player has no draws.
 CREATE VIEW draws 
@@ -53,13 +56,24 @@ OR players.player_id = matches.loser
 GROUP BY players.player_id;
 
 
+CREATE VIEW matches_played
+AS
+SELECT players.player_id,players.name,
+COALESCE(COUNT(matches.winner) + COUNT(matches.LOSER),0) AS matches
+FROM players LEFT JOIN matches
+ON players.player_id = matches.winner
+OR players.player_id = matches.loser
+GROUP BY players.player_id;
+
+
 CREATE VIEW scores 
 AS 
-SELECT players.player_id, players.name, players.active,
+SELECT players.player_id, players.name, players.active, matches_played.matches,
 draws.draws, wins.wins, draws.draws + wins.wins*3 AS score
 FROM players
 LEFT JOIN wins ON players.player_id = wins.player_id
-LEFT JOIN draws ON players.player_id = draws.player_id;
+LEFT JOIN draws ON players.player_id = draws.player_id
+LEFT JOIN matches_played ON players.player_id = matches_played.player_id;
 
 
 --The OMW_score is the combined scores of all opponents a player_id
