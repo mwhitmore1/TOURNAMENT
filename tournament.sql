@@ -58,8 +58,6 @@ OR players.player_id = matches.loser
 GROUP BY players.player_id;
 
 
---The OMW_score is the combined scores of all opponents a player_id
---has won or tied against.
 CREATE VIEW scores 
 AS 
 SELECT players.player_id,
@@ -67,6 +65,16 @@ draws.draws, wins.wins, draws.draws + wins.wins*3 AS score
 FROM players
 LEFT JOIN wins ON players.player_id = wins.player_id
 LEFT JOIN draws ON players.player_id = draws.player_id;
+
+
+--The OMW_score is the combined scores of all opponents a player_id
+--has won or tied against.
+CREATE VIEW OMW_scores
+AS SELECT matches.winner, SUM(scores.score) AS OMW_score
+FROM matches, scores 
+WHERE matches.loser = scores.player_id
+AND matches.draw = FALSE
+GROUP BY matches.winner;
 
 
 --rankings are based on points.  A win counts for 3 points, a draw
