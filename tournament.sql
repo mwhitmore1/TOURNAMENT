@@ -26,7 +26,7 @@ CREATE TABLE matches(match_id SERIAL PRIMARY KEY,
 					 draw BOOLEAN DEFAULT FALSE);
 
 					 
---The insert statemetn below creates a default tournament, so
+--The insert statement below creates a default tournament, so
 --that the number of rounds can be kept track of.  
 INSERT INTO tournaments (tournament_name) VALUES ('tournament #1');
 
@@ -77,28 +77,35 @@ LEFT JOIN matches_played ON players.player_id = matches_played.player_id;
 
 
 --The OMW_score is the combined scores of all opponents a player_id
---has won or tied against.
+--has won or tied against. 
 CREATE VIEW OMW_scores
 AS SELECT matches.winner, SUM(scores.score) AS OMW_score
 FROM matches, scores 
 WHERE matches.loser = scores.player_id
 AND matches.draw = FALSE
+--Byes are excluded.
+AND matches.winner != matches.loser
 GROUP BY matches.winner;
 
 
---rankings are based on points.  A win counts for 3 points, a draw
+--Rankings are based on points.  A win counts for 3 points, a draw
 --counts for 1 and a lose counts for 0. 
 CREATE VIEW rankings 
 AS 
 SELECT ROW_NUMBER() OVER(
-ORDER BY scores.score DESC, OMW_scores.OMW_score DESC) AS rank, * 
-FROM scores LEFT JOIN OMW_scores ON scores.player_id = OMW_scores.winner
+ORDER BY scores.score DESC, OMW_scores.OMW_score DESC) 
+AS rank, scores.*, OMW_scores.OMW_score 
+FROM scores LEFT JOIN OMW_scores 
+ON scores.player_id = OMW_scores.winner
 WHERE scores.active = TRUE;
 
 
-
-
-
-
-
-
+--Players with odd ranks get matched with the player with 
+--the closest even score.
+CREATE VIEW pairings 
+AS 
+SELECT a.player_id AS a_id, a.name AS a_name, 
+b.player_id AS b_id, b.name AS b_name
+FROM rankings AS a, rankings AS b
+WHERE b.rank = a.rank + 1
+AND MOD(a.rank, 2) = 1
