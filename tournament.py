@@ -149,16 +149,10 @@ def reportMatch(winner, loser, draw=False, tournament_id=1):
     """
 
 
-def giveBye(winner):
+def giveBye(winner, tournament=1):
     # giveBy() gives adds a win and a match to the player with a bye.
     # Player with the bye gets 3 points for the win.
-    DB = connect()
-    c = DB.cursor()
-    c.execute('''UPDATE players SET wins = wins + 1, matches = matches +1,
-                 points = points + 3
-                 WHERE player_id = %s;''', (winner,))
-    DB.commit()
-    DB.close()
+    reportMatch(winner,winner,tournament_id=tournament)
 
 
 def swissPairings(tournament_id=1):
