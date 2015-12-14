@@ -126,11 +126,6 @@ def reportMatch(winner, loser, draw=False, tournament_id=1):
     DB = connect()
     c = DB.cursor()
     if draw:
-        c.execute('''UPDATE players SET draws = draws + 1, matches =
-                     matches + 1, points = points + 3
-                     WHERE player_id = %s
-                     OR player_id = %s;''', (winner, loser))
-        DB.commit()
         # the results of the match is placed in the matches table
         c.execute('''INSERT INTO matches (round_number, winner, loser,draw)
                      SELECT tournaments.ROUND_NUMBER,%s,%s,%s
@@ -138,14 +133,6 @@ def reportMatch(winner, loser, draw=False, tournament_id=1):
                      ''', (winner, loser, True, tournament_id))
         DB.commit()
     else:
-        c.execute('''UPDATE players SET wins = wins + 1,
-                     matches = matches + 1, points = points + 3
-                     WHERE player_id = %s;''', (winner,))
-        DB.commit()
-        c.execute('''UPDATE players SET loses = loses + 1,
-                     matches = matches + 1
-                     WHERE player_id = %s;''', (loser,))
-        DB.commit()
         # the results of the match is placed in the matches table
         c.execute('''INSERT INTO matches (round_number, winner, loser,draw)
                      SELECT tournaments.ROUND_NUMBER,%s,%s,%s
