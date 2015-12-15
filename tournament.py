@@ -145,10 +145,23 @@ def reportMatch(winner, loser, draw=False, tournament_id=1):
     """
 
 
-def giveBye(winner, tournament=1):
+def beenGivenBye(player_id):
+    DB = connect()
+    c = DB.cursor()
+    c.execute(('''SELECT match_id FROM matches
+                  WHERE loser = winner AND winner = %s;'''),(player_id,))
+    result = c.fetchone()
+    DB.close()
+    if result == None:
+        return False
+    return True
+
+
+def giveBye(player_id, tournament=1):
     # giveBy() gives adds a win and a match to the player with a bye.
     # Player with the bye gets 3 points for the win.
-    reportMatch(winner, winner, tournament_id=tournament)
+    if not beenGivenBye(player_id):
+        reportMatch(player_id, player_id, tournament_id=tournament)
 
 
 def swissPairings(tournament_id=1):
