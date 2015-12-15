@@ -58,8 +58,9 @@ GROUP BY players.player_id;
 
 CREATE VIEW matches_played
 AS
-SELECT players.player_id,players.name,
-COALESCE(COUNT(matches.winner) + COUNT(matches.LOSER),0) AS matches
+SELECT players.player_id, players.name,
+COALESCE(COUNT(matches.winner) + COUNT(matches.loser),0)/2
+AS matches
 FROM players LEFT JOIN matches
 ON players.player_id = matches.winner
 OR players.player_id = matches.loser
