@@ -47,10 +47,9 @@ def connect():
 
 
 def createTournament(name='Tournament #1'):
-    # The function below takes the name of the tournament as a string.
+    # The function takes the name of the tournament as a string.
     DB = connect()
     c = DB.cursor()
-    # The tournament name is sanitized with the clean() method.
     c.execute('''INSERT INTO tournaments (tournament_name)
                  VALUES (%s);''', (name,))
     DB.commit()
@@ -62,16 +61,12 @@ def deleteMatches():
 
 
 def deletePlayers():
-    # The matches table uses player_id from the players table as a
-    # foriegn key, thus all mathces are cleared prior to the players
-    # being cleared to avoid violation of the constraint.
     DB().execute('''DELETE FROM players;''', True)
-
-# Deactivating a player will remove them from the rankings, so long
-# as they remain deactivated.
 
 
 def deactivatePlayer(player_id):
+    # Deactivating a player will remove them from the rankings, so long
+    # as they remain deactivated.
     DB = connect()
     c = DB.cursor()
     c.execute('''UPDATE players
@@ -99,7 +94,7 @@ def countPlayers():
 
 
 def registerPlayer(name):
-    # registerPlayer() inserts a vew player into the player table.
+    # registerPlayer() inserts a new player into the player table.
     DB = connect()
     c = DB.cursor()
     # The players name is sanitized with the clean() method.
@@ -113,8 +108,9 @@ def playerStandings():
     # playerStandings() shows part of the view 'rankings'.
     # Rankings puts the players in descending order based on
     # each players number of wins.  If one player has
-    # the same number of wins as another the player with the
-    # least amount of loses will be ranked higher.
+    # the same number of wins as another the players will be
+    # ranked based on the win reccord of the opponents they have
+    # defeated.
     conn = DB().execute('''SELECT player_id,name,wins,matches
                            FROM rankings;''')
     cursor = conn["cursor"].fetchall()
@@ -152,7 +148,7 @@ def reportMatch(winner, loser, draw=False, tournament_id=1):
 def giveBye(winner, tournament=1):
     # giveBy() gives adds a win and a match to the player with a bye.
     # Player with the bye gets 3 points for the win.
-    reportMatch(winner,winner,tournament_id=tournament)
+    reportMatch(winner, winner, tournament_id=tournament)
 
 
 def swissPairings(tournament_id=1):
@@ -169,11 +165,7 @@ def swissPairings(tournament_id=1):
     # with odd number ranks.  if the total number of players is
     # odd, the last player will not be matahced, as they will
     # recieve a bye for the round.
-    c.execute('''SELECT a.player_id,a.name,b.player_id,b.name
-                 FROM rankings AS a,
-                 rankings AS b
-                 WHERE b.rank = a.rank + 1
-                 AND MOD(a.rank, 2) = 1''')
+    c.execute('''SELECT * FROM pairings;''')
     result = c.fetchall()
     # giveBy() gives a win and a match to the player with a bye.
     giveBye(byeId)
